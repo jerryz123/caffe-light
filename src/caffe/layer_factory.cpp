@@ -88,29 +88,6 @@ shared_ptr<Layer<Dtype> > GetReLULayer(const LayerParameter& param) {
 
 REGISTER_LAYER_CREATOR(ReLU, GetReLULayer);
 
-// Get sigmoid layer according to engine.
-template <typename Dtype>
-shared_ptr<Layer<Dtype> > GetSigmoidLayer(const LayerParameter& param) {
-  SigmoidParameter_Engine engine = param.sigmoid_param().engine();
-  if (engine == SigmoidParameter_Engine_DEFAULT) {
-    engine = SigmoidParameter_Engine_CAFFE;
-#ifdef USE_CUDNN
-    engine = SigmoidParameter_Engine_CUDNN;
-#endif
-  }
-  if (engine == SigmoidParameter_Engine_CAFFE) {
-    return shared_ptr<Layer<Dtype> >(new SigmoidLayer<Dtype>(param));
-#ifdef USE_CUDNN
-  } else if (engine == SigmoidParameter_Engine_CUDNN) {
-    return shared_ptr<Layer<Dtype> >(new CuDNNSigmoidLayer<Dtype>(param));
-#endif
-  } else {
-    LOG(FATAL) << "Layer " << param.name() << " has unknown engine.";
-  }
-}
-
-REGISTER_LAYER_CREATOR(Sigmoid, GetSigmoidLayer);
-
 // Get softmax layer according to engine.
 template <typename Dtype>
 shared_ptr<Layer<Dtype> > GetSoftmaxLayer(const LayerParameter& param) {
@@ -133,29 +110,6 @@ shared_ptr<Layer<Dtype> > GetSoftmaxLayer(const LayerParameter& param) {
 }
 
 REGISTER_LAYER_CREATOR(Softmax, GetSoftmaxLayer);
-
-// Get tanh layer according to engine.
-template <typename Dtype>
-shared_ptr<Layer<Dtype> > GetTanHLayer(const LayerParameter& param) {
-  TanHParameter_Engine engine = param.tanh_param().engine();
-  if (engine == TanHParameter_Engine_DEFAULT) {
-    engine = TanHParameter_Engine_CAFFE;
-#ifdef USE_CUDNN
-    engine = TanHParameter_Engine_CUDNN;
-#endif
-  }
-  if (engine == TanHParameter_Engine_CAFFE) {
-    return shared_ptr<Layer<Dtype> >(new TanHLayer<Dtype>(param));
-#ifdef USE_CUDNN
-  } else if (engine == TanHParameter_Engine_CUDNN) {
-    return shared_ptr<Layer<Dtype> >(new CuDNNTanHLayer<Dtype>(param));
-#endif
-  } else {
-    LOG(FATAL) << "Layer " << param.name() << " has unknown engine.";
-  }
-}
-
-REGISTER_LAYER_CREATOR(TanH, GetTanHLayer);
 
 
 // Layers that use their constructor as their default creator should be
