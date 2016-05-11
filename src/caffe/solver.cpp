@@ -459,7 +459,7 @@ template <typename Dtype>
 string Solver<Dtype>::SnapshotToHDF5() {
   string model_filename = SnapshotFilename(".caffemodel.h5");
   LOG(INFO) << "Snapshotting to HDF5 file " << model_filename;
-  net_->ToHDF5(model_filename, param_.snapshot_diff());
+  //net_->ToHDF5(model_filename, param_.snapshot_diff());
   return model_filename;
 }
 
