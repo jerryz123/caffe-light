@@ -5,8 +5,6 @@
 #include <utility>
 #include <vector>
 
-//#include "hdf5.h"
-
 #include "caffe/blob.hpp"
 #include "caffe/common.hpp"
 #include "caffe/data_reader.hpp"
@@ -89,25 +87,6 @@ class BasePrefetchingDataLayer :
   Blob<Dtype> transformed_data_;
 };
 
-template <typename Dtype>
-class DataLayer : public BasePrefetchingDataLayer<Dtype> {
- public:
-  explicit DataLayer(const LayerParameter& param);
-  virtual ~DataLayer();
-  virtual void DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  // DataLayer uses DataReader instead for sharing for parallelism
-  virtual inline bool ShareInParallel() const { return false; }
-  virtual inline const char* type() const { return "Data"; }
-  virtual inline int ExactNumBottomBlobs() const { return 0; }
-  virtual inline int MinTopBlobs() const { return 1; }
-  virtual inline int MaxTopBlobs() const { return 2; }
-
- protected:
-  virtual void load_batch(Batch<Dtype>* batch);
-
-  DataReader reader_;
-};
 
 /**
  * @brief Provides data to the Net from memory.
@@ -125,10 +104,6 @@ class MemoryDataLayer : public BaseDataLayer<Dtype> {
   virtual inline const char* type() const { return "MemoryData"; }
   virtual inline int ExactNumBottomBlobs() const { return 0; }
   virtual inline int ExactNumTopBlobs() const { return 2; }
-
-  virtual void AddDatumVector(const vector<Datum>& datum_vector);
-  virtual void AddMatVector(const vector<cv::Mat>& mat_vector,
-      const vector<int>& labels);
 
   // Reset should accept const pointers, but can't, because the memory
   //  will be given to Blob, which is mutable
