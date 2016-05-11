@@ -1,8 +1,5 @@
 // Make sure we include Python.h before any system header
 // to avoid _POSIX_C_SOURCE redefinition
-#ifdef WITH_PYTHON_LAYER
-#include <boost/python.hpp>
-#endif
 #include <string>
 
 #include "caffe/layer.hpp"
@@ -10,9 +7,6 @@
 #include "caffe/proto/caffe.pb.h"
 #include "caffe/vision_layers.hpp"
 
-#ifdef WITH_PYTHON_LAYER
-#include "caffe/python_layer.hpp"
-#endif
 
 namespace caffe {
 
@@ -70,21 +64,6 @@ shared_ptr<Layer<Dtype> > GetPoolingLayer(const LayerParameter& param) {
 
 REGISTER_LAYER_CREATOR(Pooling, GetPoolingLayer);
 
-// Get unpooling layer according to engine.
-template <typename Dtype>
-shared_ptr<Layer<Dtype> > GetUnpoolingLayer(const LayerParameter& param) {
-  UnpoolingParameter_Engine engine = param.unpooling_param().engine();
-  if (engine == UnpoolingParameter_Engine_DEFAULT) {
-    engine = UnpoolingParameter_Engine_CAFFE;
-  }
-  if (engine == UnpoolingParameter_Engine_CAFFE) {
-    return shared_ptr<Layer<Dtype> >(new UnpoolingLayer<Dtype>(param));
-  } else {
-    LOG(FATAL) << "Layer " << param.name() << " has unknown engine.";
-  }
-}
-
-REGISTER_LAYER_CREATOR(Unpooling, GetUnpoolingLayer);
 
 // Get relu layer according to engine.
 template <typename Dtype>
@@ -178,22 +157,6 @@ shared_ptr<Layer<Dtype> > GetTanHLayer(const LayerParameter& param) {
 
 REGISTER_LAYER_CREATOR(TanH, GetTanHLayer);
 
-#ifdef WITH_PYTHON_LAYER
-template <typename Dtype>
-shared_ptr<Layer<Dtype> > GetPythonLayer(const LayerParameter& param) {
-  Py_Initialize();
-  try {
-    bp::object module = bp::import(param.python_param().module().c_str());
-    bp::object layer = module.attr(param.python_param().layer().c_str())(param);
-    return bp::extract<shared_ptr<PythonLayer<Dtype> > >(layer)();
-  } catch (bp::error_already_set) {
-    PyErr_Print();
-    throw;
-  }
-}
-
-REGISTER_LAYER_CREATOR(Python, GetPythonLayer);
-#endif
 
 // Layers that use their constructor as their default creator should be
 // registered in their corresponding cpp files. Do not register them here.
