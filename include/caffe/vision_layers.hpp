@@ -10,7 +10,6 @@
 #include "caffe/common_layers.hpp"
 #include "caffe/data_layers.hpp"
 #include "caffe/layer.hpp"
-#include "caffe/loss_layers.hpp"
 #include "caffe/neuron_layers.hpp"
 #include "caffe/proto/caffe.pb.h"
 
