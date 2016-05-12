@@ -147,7 +147,7 @@ ifneq ($(CPU_ONLY), 1)
 	LIBRARY_DIRS += $(CUDA_LIB_DIR)
 	LIBRARIES := cudart cublas curand
 endif
-LIBRARIES += glog gflags protobuf snappy boost_system
+LIBRARIES += glog gflags protobuf boost_system
 PYTHON_LIBRARIES := boost_python python2.7
 WARNINGS := -Wall -Wno-sign-compare
 
@@ -251,12 +251,6 @@ else
 	COMMON_FLAGS += -DNDEBUG -O2
 endif
 
-# cuDNN acceleration configuration.
-ifeq ($(USE_CUDNN), 1)
-	LIBRARIES += cudnn
-	COMMON_FLAGS += -DUSE_CUDNN
-endif
-
 # CPU-only configuration
 ifeq ($(CPU_ONLY), 1)
 	OBJS := $(PROTO_OBJS) $(CXX_OBJS)
@@ -265,12 +259,6 @@ ifeq ($(CPU_ONLY), 1)
 	ALL_WARNS := $(ALL_CXX_WARNS)
 	TEST_FILTER := --gtest_filter="-*GPU*"
 	COMMON_FLAGS += -DCPU_ONLY
-endif
-
-# Python layer support
-ifeq ($(WITH_PYTHON_LAYER), 1)
-	COMMON_FLAGS += -DWITH_PYTHON_LAYER
-	LIBRARIES += $(PYTHON_LIBRARIES)
 endif
 
 # BLAS configuration (default = ATLAS)
