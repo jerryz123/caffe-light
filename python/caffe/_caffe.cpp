@@ -100,38 +100,6 @@ void Net_Save(const Net<Dtype>& net, string filename) {
   WriteProtoToBinaryFile(net_param, filename.c_str());
 }
 
-void Net_SetInputArrays(Net<Dtype>* net, bp::object data_obj,
-    bp::object labels_obj) {
-  // check that this network has an input MemoryDataLayer
-  shared_ptr<MemoryDataLayer<Dtype> > md_layer =
-    boost::dynamic_pointer_cast<MemoryDataLayer<Dtype> >(net->layers()[0]);
-  if (!md_layer) {
-    throw std::runtime_error("set_input_arrays may only be called if the"
-        " first layer is a MemoryDataLayer");
-  }
-
-  // check that we were passed appropriately-sized contiguous memory
-  PyArrayObject* data_arr =
-      reinterpret_cast<PyArrayObject*>(data_obj.ptr());
-  PyArrayObject* labels_arr =
-      reinterpret_cast<PyArrayObject*>(labels_obj.ptr());
-  CheckContiguousArray(data_arr, "data array", md_layer->channels(),
-      md_layer->height(), md_layer->width());
-  CheckContiguousArray(labels_arr, "labels array", 1, 1, 1);
-  if (PyArray_DIMS(data_arr)[0] != PyArray_DIMS(labels_arr)[0]) {
-    throw std::runtime_error("data and labels must have the same first"
-        " dimension");
-  }
-  if (PyArray_DIMS(data_arr)[0] % md_layer->batch_size() != 0) {
-    throw std::runtime_error("first dimensions of input arrays must be a"
-        " multiple of batch size");
-  }
-
-  md_layer->Reset(static_cast<Dtype*>(PyArray_DATA(data_arr)),
-      static_cast<Dtype*>(PyArray_DATA(labels_arr)),
-      PyArray_DIMS(data_arr)[0]);
-}
-
 Solver<Dtype>* GetSolverFromFile(const string& filename) {
   SolverParameter param;
   ReadProtoFromTextFileOrDie(filename, &param);
@@ -250,8 +218,6 @@ BOOST_PYTHON_MODULE(_caffe) {
     .add_property("_outputs",
         bp::make_function(&Net<Dtype>::output_blob_indices,
         bp::return_value_policy<bp::copy_const_reference>()))
-    .def("_set_input_arrays", &Net_SetInputArrays,
-        bp::with_custodian_and_ward<1, 2, bp::with_custodian_and_ward<1, 3> >())
     .def("save", &Net_Save);
 
   bp::class_<Blob<Dtype>, shared_ptr<Blob<Dtype> >, boost::noncopyable>(
